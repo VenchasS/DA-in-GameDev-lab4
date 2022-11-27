@@ -39,7 +39,7 @@
 Ход работы:
 Был создан пустой 3D проект на Unity, к нему был подключен скрипт Perceptron.cs.
 Затем код был модифицирован и вынесен в класс ```PerceptronClass```
-```css
+```csharp
 private class PerceptronClass
     {
         public TrainingSet[] ts;
@@ -131,8 +131,8 @@ private class PerceptronClass
 Мы инициализируем 4 обьекта класса ```PerceptronClass``` и обучаем их, каждого своей операции.
 
 А затем выводим резальтаты обучения
-```css
-int iterations = 8;
+```csharp
+        int iterations = 8;
         var orPerceptron = new PerceptronClass();
         orPerceptron.Train(iterations, OrTs);
         var andPerceptron = new PerceptronClass();
@@ -164,6 +164,12 @@ int iterations = 8;
         Debug.Log("Test 1 nand 0: " + nandPerceptron.CalcOutput(1, 0));
         Debug.Log("Test 1 nand 1: " + nandPerceptron.CalcOutput(1, 1));
 ```
+В консоли мы видим результаты. 
+![Screenshot_1](https://user-images.githubusercontent.com/49115035/204156429-a45aabb4-8626-4d7a-860d-08a3ccbae3e0.png)
+Однако как мы можем заметить, только у операции ```XOR``` не верные результаты, из-за того что линейная модель перцептрона не может правильно разделить одной линией подобного рода плоскость, а примерно так и выглядит операция ```XOR```.
+![9af085a4c6ff4f83bcb92b6ea974fa01](https://user-images.githubusercontent.com/49115035/204156563-172dd9d6-c94b-4476-bc8e-29ad88230723.png)
+Остальные же операции способны быть явно выполненны и перцептрон их выполняет без ошибок после обучения.
+
 
 
 
