@@ -32,114 +32,140 @@
 
 
 ## Цель работы
-познакомиться с программными средствами для создания
-системы машинного обучения и ее интеграции в Unity.
+Изучить работу перцептрона на реализации команд OR, AND, XOR, NAND.
 
 ## Задание 1
-### Реализовать систему машинного обучения в связке Python - Google-Sheets – Unity.
+### Реализовать перцептрон, который умеет производить вычисления OR, AND, XOR, NAND.
 Ход работы:
-Был создан пустой 3D проект на Unity, к ней был подключен ML Agent
-Далее при помощи anaconda prompt били скачаны ```mlagents, torch```
-
-В проекте были созданны сфера, плоскость и куб
-
-Для сферы был написан C# [скрипт](https://github.com/VenchasS/DA-in-GameDev-lab3/blob/main/RollerAgent.cs)
+Был создан пустой 3D проект на Unity, к нему был подключен скрипт Perceptron.cs.
+Затем код был модифицирован и вынесен в класс ```PerceptronClass```
 ```css
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Unity.MLAgents;
-using Unity.MLAgents.Sensors;
-using Unity.MLAgents.Actuators;
-
-public class RollerAgent : Agent
-{
-    Rigidbody rBody;
-    // Start is called before the first frame update
-    void Start()
+private class PerceptronClass
     {
-        rBody = GetComponent<Rigidbody>();
-    }
+        public TrainingSet[] ts;
+        double[] weights = { 0, 0 };
+        double bias = 0;
+        double totalError = 0;
 
-    public Transform Target;
-    public override void OnEpisodeBegin()
-    {
-        if (this.transform.localPosition.y < 0)
+        double DotProductBias(double[] v1, double[] v2)
         {
-            this.rBody.angularVelocity = Vector3.zero;
-            this.rBody.velocity = Vector3.zero;
-            this.transform.localPosition = new Vector3(0, 0.5f, 0);
+            if (v1 == null || v2 == null)
+                return -1;
+
+            if (v1.Length != v2.Length)
+                return -1;
+
+            double d = 0;
+            for (int x = 0; x < v1.Length; x++)
+            {
+                d += v1[x] * v2[x];
+            }
+
+            d += bias;
+
+            return d;
         }
 
-        Target.localPosition = new Vector3(Random.value * 8 - 4, 0.5f, Random.value * 8 - 4);
-    }
-    public override void CollectObservations(VectorSensor sensor)
-    {
-        sensor.AddObservation(Target.localPosition);
-        sensor.AddObservation(this.transform.localPosition);
-        sensor.AddObservation(rBody.velocity.x);
-        sensor.AddObservation(rBody.velocity.z);
-    }
-    public float forceMultiplier = 10;
-    public override void OnActionReceived(ActionBuffers actionBuffers)
-    {
-        Vector3 controlSignal = Vector3.zero;
-        controlSignal.x = actionBuffers.ContinuousActions[0];
-        controlSignal.z = actionBuffers.ContinuousActions[1];
-        rBody.AddForce(controlSignal * forceMultiplier);
-
-        float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target.localPosition);
-
-        if (distanceToTarget < 1.42f)
+        double CalcOutput(int i)
         {
-            SetReward(1.0f);
-            EndEpisode();
+            double dp = DotProductBias(weights, ts[i].input);
+            if (dp > 0) return (1);
+            return (0);
         }
-        else if (this.transform.localPosition.y < 0)
+
+        void InitialiseWeights()
         {
-            EndEpisode();
+            for (int i = 0; i < weights.Length; i++)
+            {
+                weights[i] = Random.Range(-1.0f, 1.0f);
+            }
+            bias = Random.Range(-1.0f, 1.0f);
+        }
+
+        void UpdateWeights(int j)
+        {
+            double error = ts[j].output - CalcOutput(j);
+            totalError += Mathf.Abs((float)error);
+            for (int i = 0; i < weights.Length; i++)
+            {
+                weights[i] = weights[i] + error * ts[j].input[i];
+            }
+            bias += error;
+        }
+
+        public double CalcOutput(double i1, double i2)
+        {
+            double[] inp = new double[] { i1, i2 };
+            double dp = DotProductBias(weights, inp);
+            if (dp > 0) return (1);
+            return (0);
+        }
+
+        public void Train(int epochs, TrainingSet[] ts)
+        {
+            this.ts = ts;
+            InitialiseWeights();
+
+            for (int e = 0; e < epochs; e++)
+            {
+                totalError = 0;
+                for (int t = 0; t < ts.Length; t++)
+                {
+                    UpdateWeights(t);
+                    Debug.Log("W1: " + (weights[0]) + " W2: " + (weights[1]) + " B: " + bias);
+                }
+                Debug.Log("TOTAL ERROR: " + totalError);
+            }
         }
     }
-}
 ```
-Затем у сферы были настроенны компоненты ```Decision Requester, Behavior Parameters``` и добавлен [файл](https://github.com/VenchasS/DA-in-GameDev-lab3/blob/main/rollerball_config.yaml) конфигурации нейронной сети
-```yaml
-behaviors:
-  RollerBall:
-    trainer_type: ppo
-    hyperparameters:
-      batch_size: 10
-      buffer_size: 100
-      learning_rate: 3.0e-4
-      beta: 5.0e-4
-      epsilon: 0.2
-      lambd: 0.99
-      num_epoch: 3
-      learning_rate_schedule: linear
-    network_settings:
-      normalize: false
-      hidden_units: 128
-      num_layers: 2
-    reward_signals:
-      extrinsic:
-        gamma: 0.99
-        strength: 1.0
-    max_steps: 500000
-    time_horizon: 64
-    summary_freq: 10000
+
+
+Затем были заполненны Training set'ы, каждый для своей операции
+```OR, AND, XOR, NAND```
+![Screenshot_2](https://user-images.githubusercontent.com/49115035/204156231-3e60fa89-cdef-4d87-8890-5de3b42eb95c.png)
+![Screenshot_3](https://user-images.githubusercontent.com/49115035/204156225-b003d51a-e9fc-4f0d-a6d4-0bde78346e2f.png)
+![Screenshot_4](https://user-images.githubusercontent.com/49115035/204156228-c912b3a8-4b14-4e90-9b4f-3202fcd53db9.png)
+![Screenshot_5](https://user-images.githubusercontent.com/49115035/204156230-c547b185-0f3b-4933-8250-7604bb043581.png)
+
+Мы инициализируем 4 обьекта класса ```PerceptronClass``` и обучаем их, каждого своей операции.
+
+А затем выводим резальтаты обучения
+```css
+int iterations = 8;
+        var orPerceptron = new PerceptronClass();
+        orPerceptron.Train(iterations, OrTs);
+        var andPerceptron = new PerceptronClass();
+        andPerceptron.Train(iterations, AndTs);
+        var xorPerceptron = new PerceptronClass();
+        xorPerceptron.Train(iterations, XorTs);
+        var nandPerceptron = new PerceptronClass();
+        nandPerceptron.Train(iterations, NandTs);
+
+
+
+        Debug.Log("Test 0 or 0: " + orPerceptron.CalcOutput(0, 0));
+        Debug.Log("Test 0 or 1: " + orPerceptron.CalcOutput(0, 1));
+        Debug.Log("Test 1 or 0: " + orPerceptron.CalcOutput(1, 0));
+        Debug.Log("Test 1 or 1: " + orPerceptron.CalcOutput(1, 1));
+
+        Debug.Log("Test 0 and 0: " + andPerceptron.CalcOutput(0, 0));
+        Debug.Log("Test 0 and 1: " + andPerceptron.CalcOutput(0, 1));
+        Debug.Log("Test 1 and 0: " + andPerceptron.CalcOutput(1, 0));
+        Debug.Log("Test 1 and 1: " + andPerceptron.CalcOutput(1, 1));
+
+        Debug.Log("Test 0 xor 0: " + xorPerceptron.CalcOutput(0, 0));
+        Debug.Log("Test 0 xor 1: " + xorPerceptron.CalcOutput(0, 1));
+        Debug.Log("Test 1 xor 0: " + xorPerceptron.CalcOutput(1, 0));
+        Debug.Log("Test 1 xor 1: " + xorPerceptron.CalcOutput(1, 1));
+
+        Debug.Log("Test 0 nand 0: " + nandPerceptron.CalcOutput(0, 0));
+        Debug.Log("Test 0 nand 1: " + nandPerceptron.CalcOutput(0, 1));
+        Debug.Log("Test 1 nand 0: " + nandPerceptron.CalcOutput(1, 0));
+        Debug.Log("Test 1 nand 1: " + nandPerceptron.CalcOutput(1, 1));
 ```
-после чего был запущен ml agent из anacond prompt, ниже предоставленно gif с результатом работы проекта(нажмите для проигрывания)
-![2022-10-26-20-13-47](https://user-images.githubusercontent.com/49115035/198072629-7f8452af-baf0-4bae-a9d8-76042611bf73.gif)
 
 
-Далее тренировка была запущенна сразу на 9 копий, ниже предоставленно gif
-![2](https://user-images.githubusercontent.com/49115035/198074291-e3813dfb-ceea-4389-a264-9fda656308ba.gif)
-
-И соответственно на 27 копий, ниже предоставленно gif
-![3](https://user-images.githubusercontent.com/49115035/198075173-174d5d46-23d5-4512-a0a8-fd88e68ab0c8.gif)
-
-
-После ```60.000 step``` сферы стали достаточно плавно и точно перемещаться к цели по кратчайшему маршруту
 
 ## Задание 2
 ### Сделать описание конфигурационного [файла](https://github.com/VenchasS/DA-in-GameDev-lab3/blob/main/rollerball_config.yaml)
