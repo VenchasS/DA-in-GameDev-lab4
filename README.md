@@ -177,6 +177,33 @@ private class PerceptronClass
 
 ## Задание 2
 ### Построить графики зависимости количества ошибок от эпох обучения перцептрона.
+Далее я написал метод получения среднего значения ошибок по эпохе
+```csharp
+        public double GetStatistics(int epochs, TrainingSet[] ts, int range)
+        {
+            var statArray = new double[range];
+            for (int i = 0; i < range; i++)
+            {
+                Train(epochs, ts);
+                statArray[i] = totalError;
+            }
+            var res = 0.0;
+            foreach (var item in statArray)
+            {
+                res += item;
+            }
+            return res / range;
+        }
+```
+Запускал программу для ```range = 100``` и ```epochs от 1 до 5```
+
+получил данные результаты:
+![chart (1)](https://user-images.githubusercontent.com/49115035/204158337-a020f4e7-5bc5-40a2-b56d-f74b6ff410ae.png)
+![chart](https://user-images.githubusercontent.com/49115035/204158336-0bb7b8c4-7e24-48e3-a6d5-a1bd0dd76ca3.png)
+![chart (2)](https://user-images.githubusercontent.com/49115035/204158335-e1cb4c7d-5069-45b9-be69-56afa9974e59.png)
+![chart (3)](https://user-images.githubusercontent.com/49115035/204158333-711e7caf-e01c-43d6-b100-f1755f4a75e8.png)
+
+
 
 
 
