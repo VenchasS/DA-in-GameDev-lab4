@@ -215,7 +215,7 @@ private class PerceptronClass
 при соприкосновении кубы выполнют ```OR``` операцию запрашивая значение из перцепртона, и перекрашиваются в результат работы перцептрона.
 
 
-Новый файл [Perceptron2.cs](https://github.com/VenchasS/DA-in-GameDev-lab4/blob/main/Perceptron2.cs) который используется для визализации
+Новый файл [Perceptron2.cs](https://github.com/VenchasS/DA-in-GameDev-lab4/blob/main/Perceptron2.cs) который используется для визуализации
 ![2022-11-28 15-57-16](https://user-images.githubusercontent.com/49115035/204262244-620a7c67-e02f-46b8-92e0-42decb69174c.gif)
 
 
