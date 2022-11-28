@@ -216,6 +216,51 @@ private class PerceptronClass
 
 
 Новый файл [Perceptron2.cs](https://github.com/VenchasS/DA-in-GameDev-lab4/blob/main/Perceptron2.cs) который используется для визуализации
+
+
+```csharp
+    private PerceptronClass orPerceptron;
+    private Vector3 pos;
+    private Material defMat;
+
+
+    void Start()
+    {
+        int iterations = 8;
+        orPerceptron = new PerceptronClass();
+        orPerceptron.Train(iterations, OrTs);
+
+        pos = this.transform.position;
+        defMat = this.gameObject.GetComponent<Renderer>().material;
+
+    }
+
+    IEnumerator UpdateCoroutine()
+    {
+        yield return new WaitForSeconds(2);
+        this.transform.position = pos;
+        this.gameObject.GetComponent<Renderer>().material = defMat;
+        
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log(collision);
+        var cube = collision.gameObject.GetComponent<Perceptron>();
+        if (cube)
+        {
+            if (orPerceptron.CalcOutput(this.OrValue, cube.OrValue) == 1)
+            {
+                this.gameObject.GetComponent<Renderer>().material = GreenMaterial;
+            }
+            else
+            {
+                this.gameObject.GetComponent<Renderer>().material = RedMaterial;
+            }
+            StartCoroutine(UpdateCoroutine());
+        }
+    }
+```
 ![2022-11-28 15-57-16](https://user-images.githubusercontent.com/49115035/204262244-620a7c67-e02f-46b8-92e0-42decb69174c.gif)
 
 
